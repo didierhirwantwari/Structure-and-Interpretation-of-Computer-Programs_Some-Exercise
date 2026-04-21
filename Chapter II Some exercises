@@ -1,0 +1,186 @@
+#Didier Hirwantwari
+
+#lang scheme
+;exercise 2.4
+;lets do a definition for power or exponent using recursion
+
+(define (powerD n p)
+  (if (= 0 p)
+      1
+      (* n (powerD n (- p 1)))))
+
+(powerD 5 2)
+
+
+;Do the definition for cons
+(define (consPwers a b)
+  (cons (powerD 2 a) (powerD 3 b)))
+
+(consPwers 2 2)
+
+;---------------------------------------------------------------
+
+; EXTENDED EXERCISE: INTERVAL ARITHMETIC
+
+;the goal of this exercise as per the book is to create or rather
+;-improve upon Alyssa P hacker's code for engineers for creating and
+;-working with intervals. 
+
+;EXERCIS 2.7 here we are asked to create definitions for lower and upper bound
+
+(define resistance_a .10)
+(define resistance_b .05)
+
+;(define (lower-bound n) (- n (* n resistance))) 
+
+;(define (upper-bound n) (+ n (* n resistance)))
+
+;below are provided code for additsdafdion of intervals, multiplication of intervals and division of intervals
+
+; define an endpoint
+(define (end-point a b) (cons a b))
+
+;original make interval
+(define (make-interval a b) (cons a b))
+;CAUTION....what we were missing here is that a and b are two different numbers and so really if we ask for lower bound and
+;...upper bound of a we get two numbers (lower_a, uppe_a).
+
+;make interval with procedures
+
+;LOWER and UPPER bounds first method
+;(define (lower-bound n) (- n (* n resistance)))
+;issue with this definition is that it is similar to the addition procedure further below
+;(define (lower-bound a b)  (+  (car a)  (car b)))
+;(define (upper-bound a b)  (+ (cdr a) (cdr b)))
+  
+
+;lOWER AND UPPER BOUNDS SECOND METHODS
+
+;For some reason this is not working as well. it works and can output the lowerbounds of an interval and  upper bounds. 
+;+(define (lower-bound a b)(cons (car a) (car b)))
+
+;(define (upper-bound a b) (cons (cdr a) (cdr b)))
+
+
+;Lower and Uppper bounds third methods.
+(define (lower-bound make-interval) (car make-interval))
+
+(define (upper-bound make-interval)  (cdr make-interval))
+
+;Basic operations
+; key here is that add interval assumes that x and y are two different intervals
+; basically add-interval combines two results loweraddition and upperAddition and constructs a pair
+(define (add-interval x y)
+  (make-interval (+ (lower-bound x)
+                    (lower-bound y))
+                 (+ (upper-bound x)
+                    (upper-bound y))))
+
+
+(define (mult-interval x y )
+  (let ((p1 (* (lower-bound x) (lower-bound y)))
+        (p2 (* (lower-bound x) (upper-bound y)))
+        (p3 (* (upper-bound x) (lower-bound y)))
+        (p4 (* (upper-bound x) (upper-bound y))))
+    (make-interval (min p1 p2 p3 p4)
+                   (max p1 p2 p3 p4))))
+
+;original divide interval right below. 
+;(define (div-interval x y)
+;  (mult-interval x
+;                (make-interval (/ 1.0 (upper-bound y))
+ ;                              (/ 1.0 (lower-bound y )))))
+
+
+
+;divide interval new with the advent of exercise 2.10
+(define (div-interval x y)
+  (mult-interval x
+                (make-interval
+                (if (equal? (upper-bound y) 0)
+                    (error "Upper_Bound div by 0 error")
+                    (/ 1.0 (upper-bound y)))
+                   
+                (if (equal? (lower-bound y) 0)
+                    (error "Lower_Bound div by 0 error" )
+                  (/ 1.0 (lower-bound y)) ))))
+                   
+                              
+
+
+(define (print-interval x y)
+  (newline)
+  (display "[")
+  (display  x)
+  (display ",")
+  (display y )
+  (display "]"))
+
+; we can create some examples
+;(define intervalOne (make-interval 6.8  ))
+
+;lets begin by creating some points
+
+(define intervalOne (end-point 6.12 7.48))
+intervalOne
+
+;(define x 4.56)
+;x
+
+(define intervalTwo (end-point 2.58 8.69))
+intervalTwo
+
+
+(define intervalMain (make-interval intervalOne intervalTwo))
+intervalOne
+
+
+
+;(print-interval intervalOne intervalTwo)
+
+(define lowerBoundOne (lower-bound intervalOne))
+lowerBoundOne
+
+(define upperBoundOne (upper-bound intervalOne ))
+upperBoundOne
+
+
+(define addMainInterval (add-interval intervalOne intervalTwo))
+addMainInterval
+
+;--------------------------------------------------------------------------------
+;Exercise  2.8 build a sub-interval procedure based on Alyssa's
+
+(define (sub-interval x y)
+  (make-interval ( - (lower-bound x) (lower-bound y))
+                 ( - (upper-bound x) (upper-bound y))))
+
+(define subMainInterval (sub-interval intervalOne intervalTwo))
+subMainInterval
+
+
+;Exercise 2.9 show that width of an interval Show that the width of the sum (or
+;difference) of two intervals is a function only of the widths;of the intervals being added
+;(or subtracted). Give examples to show that this is not true for multiplication or division.    
+
+
+; ---Lets do a multiplication using [5, 9] and [7, 4]
+(define intervalA (end-point 5 9))
+intervalA
+
+;(define x 4.56)
+;x
+
+(define intervalB (end-point 0 0))
+intervalB
+
+(define multiplyAandB (mult-interval intervalA intervalB))
+multiplyAandB
+
+
+;Exercise 2.10 What happens if an interval that she is dividing by spans a 0.
+;Re-write her to include how to rectify that
+
+(define divAandB (div-interval intervalA intervalB))
+divAandB
+
